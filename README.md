@@ -29,6 +29,7 @@ Das Repo ist öffentlich. Sheet-ID und Passwörter werden nur im Apps Script ges
 IBAN und Kontoinhaber werden in der Seite unter «Einstellungen» erfasst und im Sheet gespeichert.
 
 ## Stand
+- CW1.06 – Rechnungs-PDF: Leerzeile vor dem Betreff; unten MWST-Hinweis (grau), Leerzeile, dann Danke/IBAN/Kontoinhaber als kleiner Block
 - CW1.05 – Rechnungen: Knopf «Kopieren»
 - CW1.04 – Rechnung: MWST-Hinweis unter dem Total, IBAN/Kontoinhaber kleiner mit Abstand; Hauptseite: Hersperger ohne Kasten, «Besten Dank!!!» (`Code.gs` bleibt CW1.03)
 - CW1.03 – Umbau auf einfache Einnahmen-/Ausgabenrechnung (Chilbi-Teile entfernt), Sponsoren-Fusszeile auf der Hauptseite. `Code.gs` muss neu bereitgestellt werden.

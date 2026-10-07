@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.05">
+<meta name="app-version" content="CW1.06">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.05 -->
+<!-- CW1.06 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -112,7 +112,7 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.05</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.06</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
@@ -139,7 +139,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';
-const APP_VERSION = 'CW1.05';
+const APP_VERSION = 'CW1.06';
 const SERVER_MIN = 'CW1.03';   // aelteres Apps Script kennt Datum / «bezahlt am» nicht -> Speichern gesperrt
 let PW = '';
 let VIEW_ONLY=false, SERVER_OK=true;
@@ -432,7 +432,7 @@ function _rgDoc(r){
   doc.text('Herrliberg, '+(r.datum||''),RX,75,{align:'right'});
   doc.setFontSize(10); doc.setTextColor(110); doc.text('Rechnung '+(r.nr||''),RX,80.5,{align:'right'}); doc.setTextColor(0); doc.setFontSize(11);
   // Betreff
-  let y=92; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(String(r.betreff||''),20,y); doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  let y=97.5; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(String(r.betreff||''),20,y); doc.setFont('helvetica','normal'); doc.setFontSize(11);
   // Anrede
   y+=14; doc.text(String(r.anrede||''),20,y);
   // Einleitung
@@ -457,11 +457,11 @@ function _rgDoc(r){
   doc.setLineWidth(0.3); doc.line(CA-10,y-6,RX,y-6);
   doc.setFont('helvetica','bold'); doc.text('Total',20,y); doc.text('CHF '+F(r.total||rgPosTotal()),RX,y,{align:'right'}); doc.setFont('helvetica','normal');
   doc.setLineWidth(0.2); doc.line(CA-10,y+1.5,RX,y+1.5);
-  // MWST-Hinweis (CW1.04)
-  y+=7; doc.setFontSize(9); doc.setTextColor(90); doc.text('MWST-frei: nicht mehrwertsteuerpflichtig gemäss Art. 10 Abs. 2 MWSTG.',20,y); doc.setTextColor(0); doc.setFontSize(11);
-  // Danke + IBAN: eine Leerzeile Abstand, IBAN und Kontoinhaber kleiner
-  y+=14; doc.splitTextToSize('Danke für die Unterstützung und die Überweisung auf unser Konto:',170).forEach(l=>{ doc.text(l,20,y); y+=5.5; });
-  y+=5.5; doc.setFontSize(9);
+  // Kleine Schrift: MWST-Hinweis (grau), eine Leerzeile, dann Danke + IBAN + Kontoinhaber als Block
+  y+=25; doc.setFontSize(9);
+  doc.setTextColor(120); doc.text('MWST-frei: nicht mehrwertsteuerpflichtig gemäss Art. 10 Abs. 2 MWSTG.',20,y); doc.setTextColor(0);
+  y+=9;
+  doc.splitTextToSize('Danke für die Unterstützung und die Überweisung auf unser Konto:',170).forEach(l=>{ doc.text(l,20,y); y+=4.5; });
   doc.text('IBAN: '+(FIN.rgIban||''),20,y);
   if(FIN.rgKontoinhaber){ doc.splitTextToSize('lautend auf '+String(FIN.rgKontoinhaber),170).forEach(l=>{ y+=4.5; doc.text(l,20,y); }); }
   doc.setFontSize(11);
