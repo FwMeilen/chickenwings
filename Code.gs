@@ -1,7 +1,7 @@
 /**
  * Chicken Wings – Finanzen (Google Apps Script)
  * Stützpunktfeuerwehr Meilen
- * Version CW1.00
+ * Version CW1.01
  *
  * Übernommen aus dem Chilbi-Tool (Teil «Finanzen / Abrechnung»).
  * Einrichten: Werte unten setzen, als Web-App bereitstellen (Zugriff: alle),
@@ -64,7 +64,7 @@ function abrSave(p){
   var meta = p.meta || {};
   var mSheet = ss.getSheetByName('Meta') || ss.insertSheet('Meta');
   mSheet.clear();
-  mSheet.getRange(1,1,21,2).setValues([
+  mSheet.getRange(1,1,22,2).setValues([
     ['Schlüssel','Wert'],
     ['Jahr', meta.jahr||''],
     ['Vorjahr', meta.vorjahr||''],
@@ -83,6 +83,7 @@ function abrSave(p){
     ['RgIntro', meta.rgIntro||''],
     ['RgVorPos', meta.rgVorPos||''],
     ['RgIban', meta.rgIban||''],
+    ['RgKontoinhaber', meta.rgKontoinhaber||''],
     ['RgGruss', meta.rgGruss||''],
     ['RgFooter', meta.rgFooter||''],
     ['RgNext', meta.rgNext||'']

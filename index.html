@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="app-version" content="CW1.01">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<title>Chicken Wings</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<!-- CW1.01 -->
+<style>
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+  #logoBtn{background:none;border:0;padding:0;cursor:pointer;display:block;border-radius:8px;
+           transition:transform .35s ease;}
+  #logoBtn img{display:block;width:min(360px,70vw,52vh);height:auto;aspect-ratio:1/1;transition:width .35s ease;}
+  #logoBtn:hover{transform:scale(1.03);}
+  #logoBtn:focus-visible{outline:2px solid #ffc800;outline-offset:8px;}
+  body.open #logoBtn{cursor:default;transform:none;}
+  body.open #logoBtn img{width:min(220px,50vw,34vh);}
+  #login{width:100%;max-width:280px;margin-top:22px;text-align:center;display:none;}
+  body.open #login{display:block;animation:in .35s ease both;}
+  @keyframes in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  #pw{width:100%;height:42px;background:#111;border:1px solid #555;color:#fff;text-align:center;
+      font-family:inherit;font-size:15px;}
+  #pw:focus{border-color:#ffc800;outline:none;}
+  #go{width:100%;height:42px;margin-top:10px;background:#ffc800;border:2px solid #ffc800;color:#000;
+      font-family:inherit;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;}
+  #go:hover{background:#e0aa00;border-color:#e0aa00;}
+  #go:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+  #msg{color:#ff6b6b;font-size:13px;margin-top:10px;min-height:16px;}
+  footer{position:fixed;left:0;right:0;bottom:10px;text-align:center;color:#555;font-size:11px;}
+  @media (prefers-reduced-motion:reduce){
+    #logoBtn,#logoBtn img{transition:none;} body.open #login{animation:none;} #logoBtn:hover{transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<button id="logoBtn" type="button" aria-label="Anmelden" aria-expanded="false" aria-controls="login">
+  <img src="logo.png" width="560" height="560" alt="Feuerwehr Hockeyteam Chicken Wings">
+</button>
+
+<form id="login" autocomplete="on">
+  <input type="password" id="pw" placeholder="Passwort" aria-label="Passwort" autocomplete="current-password">
+  <button id="go" type="submit">Anmelden</button>
+  <div id="msg" role="alert"></div>
+</form>
+
+<footer>CW1.01</footer>
+
+<script>
+// CW1.01 – Hauptseite. Das Passwort wird hier NICHT geprueft und steht nirgends im Code:
+// es wird einmalig an die Finanzseite uebergeben, die es beim Server (Apps Script) prueft.
+var btn=document.getElementById('logoBtn');
+btn.addEventListener('click',function(){
+  if(document.body.classList.contains('open')) return;
+  document.body.classList.add('open');
+  btn.setAttribute('aria-expanded','true');
+  document.getElementById('pw').focus();
+});
+document.getElementById('login').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var pw=document.getElementById('pw').value;
+  if(!pw){ document.getElementById('msg').textContent='Bitte Passwort eingeben.'; return; }
+  try{ sessionStorage.setItem('cw_pw',pw); }catch(e){}
+  location.href='finanzen/';
+});
+</script>
+</body>
+</html>
