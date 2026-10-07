@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.06">
+<meta name="app-version" content="CW1.07">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.06 -->
+<!-- CW1.07 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -112,7 +112,7 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.06</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.07</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
@@ -139,7 +139,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';
-const APP_VERSION = 'CW1.06';
+const APP_VERSION = 'CW1.07';
 const SERVER_MIN = 'CW1.03';   // aelteres Apps Script kennt Datum / «bezahlt am» nicht -> Speichern gesperrt
 let PW = '';
 let VIEW_ONLY=false, SERVER_OK=true;
@@ -354,6 +354,7 @@ function renderRechnungen(){
     <tbody>${list||'<tr><td colspan="6" class="muted" style="padding:8px">Noch keine Rechnungen.</td></tr>'}</tbody></table>
     <button class="btn btn-sm btn-gold" style="margin-top:12px" onclick="rgNew()">+ Neue Rechnung</button></div>
     <div id="rgForm"></div>`;
+  if(_rgCur) renderRgForm();
 }
 // CW1.05: Rechnung kopieren – neuer Entwurf mit naechster Nummer und heutigem Datum; Empfaenger und E-Mail bleiben leer
 function rgCopy(i){
@@ -361,7 +362,7 @@ function rgCopy(i){
   const n=_blankRg();
   n.betreff=s.betreff||''; n.anrede=s.anrede||n.anrede; n.intro=s.intro||'';
   n.positionen=JSON.parse(JSON.stringify((s.positionen&&s.positionen.length)?s.positionen:n.positionen));
-  _rgCur=n; renderRgForm();
+  n._dirty=true; _rgCur=n; renderRgForm();
   const f=document.getElementById('rgForm'); if(f){ f.scrollIntoView({behavior:'smooth',block:'start'}); const e=f.querySelector('input'); if(e) e.focus({preventScroll:true}); }
   status('Kopie von '+s.nr+' als '+n.nr+' geöffnet – Empfänger eintragen und «Rechnung speichern».');
 }
@@ -380,7 +381,7 @@ function renderRgForm(){
     <td><input class="in" value="${esc(p.text)}" oninput="_rgCur.positionen[${i}].text=this.value"></td>
     <td><input class="in num" style="width:90px" value="${esc(p.preis)}" oninput="_rgCur.positionen[${i}].preis=this.value;rgTot()"></td>
     <td class="num" id="rg-p-${i}">CHF ${F(N(p.anzahl)*N(p.preis))}</td>
-    <td style="text-align:center"><button class="btn btn-sm" style="height:26px;padding:0 8px" onclick="_rgCur.positionen.splice(${i},1);renderRgForm()">✕</button></td></tr>`).join('');
+    <td style="text-align:center"><button class="btn btn-sm" style="height:26px;padding:0 8px" onclick="_rgCur.positionen.splice(${i},1);_rgCur._dirty=true;renderRgForm()">✕</button></td></tr>`).join('');
   document.getElementById('rgForm').innerHTML=`
     <div class="card"><div class="card-title">Rechnung ${esc(_rgCur.nr)}</div>
     <div style="display:flex;gap:16px;flex-wrap:wrap">
@@ -401,21 +402,34 @@ function renderRgForm(){
     <label class="fld">Einleitungstext<textarea class="in" style="height:70px" oninput="_rgCur.intro=this.value">${esc(_rgCur.intro)}</textarea></label>
     <div style="font-weight:700;margin:6px 0 4px">Positionen</div>
     <table><thead><tr><th style="width:80px">Anzahl</th><th>Text</th><th style="width:100px">à-Preis</th><th class="num" style="width:100px">Betrag</th><th style="width:40px"></th></tr></thead><tbody>${posRows}</tbody></table>
-    <button class="btn btn-sm" style="margin-top:8px" onclick="_rgCur.positionen.push({anzahl:'',text:'',preis:''});renderRgForm()">+ Position</button>
+    <button class="btn btn-sm" style="margin-top:8px" onclick="_rgCur.positionen.push({anzahl:'',text:'',preis:''});_rgCur._dirty=true;renderRgForm()">+ Position</button>
     <div class="kv total" style="margin-top:10px"><span>Total</span><span id="rg-total">CHF ${F(rgPosTotal())}</span></div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
       <button class="btn btn-gold btn-sm" onclick="rgSave()">Rechnung speichern</button>
       <button class="btn btn-sm" onclick="rgPdfCur()">PDF herunterladen</button>
-      <button class="btn btn-sm" onclick="_rgCur=null;renderRgForm()">Schliessen</button>
+      <button class="btn btn-sm" onclick="rgCloseForm()">Schliessen</button>
       <span id="rgMsg" class="muted" style="font-size:12px;align-self:center"></span>
     </div></div>`;
+  _rgHint();
 }
 function rgTot(){ _rgCur.positionen.forEach((p,i)=>{ const c=document.getElementById('rg-p-'+i); if(c) c.textContent='CHF '+F(N(p.anzahl)*N(p.preis)); }); const t=document.getElementById('rg-total'); if(t) t.textContent='CHF '+F(rgPosTotal()); }
-function rgSave(){
+// CW1.07: Stand des offenen Formulars in die Liste uebernehmen (Formular bleibt offen).
+function _rgCommit(){
+  if(!_rgCur) return;
   _rgCur.total=rgPosTotal();
-  const obj=JSON.parse(JSON.stringify(_rgCur));
-  if(_rgCur._new){ delete obj._new; obj.nr=_rgNr(obj.datum); FIN.rechnungen.push(obj); FIN.rgNext=(FIN.rgNext||1)+1; }
-  else { const idx=_rgCur._idx; delete obj._idx; FIN.rechnungen[idx]=obj; }
+  const obj=JSON.parse(JSON.stringify(_rgCur)); delete obj._new; delete obj._idx; delete obj._dirty;
+  if(_rgCur._new){ obj.nr=_rgNr(obj.datum); FIN.rechnungen.push(obj); FIN.rgNext=(FIN.rgNext||1)+1; _rgCur.nr=obj.nr; delete _rgCur._new; _rgCur._idx=FIN.rechnungen.length-1; }
+  else { FIN.rechnungen[_rgCur._idx]=obj; }
+  _rgCur._dirty=false;
+}
+function _rgHint(){ const m=document.getElementById('rgMsg'); if(m){ const d=!!(_rgCur&&_rgCur._dirty); m.textContent=d?'Ungespeicherte Änderungen':''; m.style.color=d?'#b36b00':''; m.style.fontWeight=d?'700':''; } }
+function _rgTouch(){ if(_rgCur&&!_rgCur._dirty){ _rgCur._dirty=true; _rgHint(); } }
+document.addEventListener('input',function(e){ if(_rgCur&&e.target&&e.target.closest&&e.target.closest('#rgForm')) _rgTouch(); });
+function rgCloseForm(){ if(_rgCur&&_rgCur._dirty&&!confirm('Ungespeicherte Änderungen an dieser Rechnung verwerfen?')) return; _rgCur=null; renderRgForm(); }
+// Stand fuer PDF/Senden aus der Uebersicht: ist die Rechnung im Formular offen, gilt das Formular.
+function _rgFor(i){ return (_rgCur&&!_rgCur._new&&_rgCur._idx===i)?Object.assign({},_rgCur,{total:rgPosTotal()}):FIN.rechnungen[i]; }
+function rgSave(){
+  _rgCommit();
   _rgCur=null;
   renderRechnungen(); renderEinnahmen(); renderEinstellungen();
   status('Rechnung gespeichert (lokal) – zum dauerhaften Sichern oben «Speichern» drücken.');
@@ -469,13 +483,13 @@ function _rgDoc(r){
   // Gruss
   doc.splitTextToSize(String(FIN.rgGruss||''),170).forEach(l=>{ doc.text(l,20,y); y+=5.5; });
   // Fusszeile
-  if(FIN.rgFooter){ doc.setFontSize(8); doc.setTextColor(140); doc.splitTextToSize(String(FIN.rgFooter),170).forEach(function(l,i){ doc.text(l,105,283+i*4,{align:'center'}); }); doc.setTextColor(0); doc.setFontSize(11); }
+  if(FIN.rgFooter){ doc.setFontSize(8); doc.setTextColor(140); var fl=[]; String(FIN.rgFooter).split(/\r?\n/).forEach(function(z){ if(z.trim()) fl=fl.concat(doc.splitTextToSize(z.trim(),170)); }); var fy=283-(fl.length-1)*4; fl.forEach(function(l,i){ doc.text(l,105,fy+i*4,{align:'center'}); }); doc.setTextColor(0); doc.setFontSize(11); }
   return doc;
 }
-function rgPdf(i){ const doc=_rgDoc(FIN.rechnungen[i]); doc.save(FIN.rechnungen[i].nr+'.pdf'); }
+function rgPdf(i){ const r=_rgFor(i); const doc=_rgDoc(r); doc.save(r.nr+'.pdf'); }
 function rgPdfCur(){ _rgCur.total=rgPosTotal(); const doc=_rgDoc(_rgCur); doc.save(_rgCur.nr+'.pdf'); }
 async function rgSend(i){
-  const r=FIN.rechnungen[i];
+  const r=_rgFor(i);
   if(!r.email||!/@/.test(r.email)){ alert('Für diese Rechnung ist keine E-Mail hinterlegt (Rechnung öffnen und Adresse eintragen).'); return; }
   if(!confirm('Rechnung '+r.nr+' an '+r.email+' senden?')) return;
   const doc=_rgDoc(r); const pdf=doc.output('datauristring').split(',')[1];
@@ -512,7 +526,7 @@ function renderEinstellungen(){
     <label class="fld">IBAN<input class="in" value="${esc(FIN.rgIban)}" oninput="FIN.rgIban=this.value"></label>
     <label class="fld">Kontoinhaber (erscheint unter der IBAN als «lautend auf …»)<input class="in" value="${esc(FIN.rgKontoinhaber)}" oninput="FIN.rgKontoinhaber=this.value"></label>
     <label class="fld">Gruss<textarea class="in" style="height:60px" oninput="FIN.rgGruss=this.value">${esc(FIN.rgGruss)}</textarea></label>
-    <label class="fld">Fusszeile<input class="in" value="${esc(FIN.rgFooter)}" oninput="FIN.rgFooter=this.value"></label>
+    <label class="fld">Fusszeile (mehrere Zeilen möglich)<textarea class="in" style="height:60px" oninput="FIN.rgFooter=this.value">${esc(FIN.rgFooter)}</textarea></label>
     <label class="fld" style="width:220px">Nächste Rechnungsnummer (lfd.)<input class="in num" value="${esc(FIN.rgNext)}" oninput="FIN.rgNext=parseInt(this.value)||1"></label>
     <div style="margin-top:6px"><button class="btn btn-sm" onclick="rgUnlockAll()">Alle Rechnungen freigeben (Passwort)</button></div>
     </div>
@@ -562,7 +576,12 @@ function finExport(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rg),'Rechnungen');
   XLSX.writeFile(wb,'chickenwings_finanzen_'+heute()+'.xlsx');
 }
-async function saveAll(){ if(VIEW_ONLY) return; status('Speichere…'); await _doSave(_buildPayload()); }
+async function saveAll(){
+  if(VIEW_ONLY) return;
+  // CW1.07: offene, geaenderte Rechnung zuerst uebernehmen – sonst meldet «Gespeichert», ohne sie zu sichern
+  if(_rgCur&&_rgCur._dirty){ _rgCommit(); renderRechnungen(); renderEinnahmen(); renderEinstellungen(); }
+  status('Speichere…'); await _doSave(_buildPayload());
+}
 async function autoSave(){ if(VIEW_ONLY||!PW) return; if(_snap()===_lastSnap) return; await _doSave(_buildPayload(),'✓ Auto-gespeichert'); }
 // Passwort vom Login der Hauptseite uebernehmen (wird nach der Pruefung geloescht)
 try{ var _h=sessionStorage.getItem('cw_pw'); if(_h){ document.getElementById('pw').value=_h; unlock(); } }catch(e){}
