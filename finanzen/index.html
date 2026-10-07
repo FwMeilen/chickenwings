@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.04">
+<meta name="app-version" content="CW1.05">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.04 -->
+<!-- CW1.05 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -66,7 +66,7 @@
   .menu button[data-s="abrechnung"]{font-weight:700;}
   .card{overflow-x:auto;}
   #sec-einnahmen table,#sec-ausgaben table{min-width:640px;}
-  #sec-rechnungen .card:first-child table{min-width:820px;}
+  #sec-rechnungen .card:first-child table{min-width:900px;}
   input[type=date].in{min-width:130px;}
   .warn{background:#fff3cd;border:1px solid #e0aa00;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.5;}
   .print-only{display:none;}
@@ -112,7 +112,7 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.04</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.05</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
@@ -139,7 +139,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';
-const APP_VERSION = 'CW1.04';
+const APP_VERSION = 'CW1.05';
 const SERVER_MIN = 'CW1.03';   // aelteres Apps Script kennt Datum / «bezahlt am» nicht -> Speichern gesperrt
 let PW = '';
 let VIEW_ONLY=false, SERVER_OK=true;
@@ -345,14 +345,25 @@ function renderRechnungen(){
       ${r.abgeschlossen?'<span class="muted" style="font-size:11px;margin-right:6px">✓ abgeschlossen</span>':`<button class="btn btn-sm" style="height:26px" onclick="rgEdit(${i})">Öffnen</button>`}
       <button class="btn btn-sm" style="height:26px" onclick="rgPdf(${i})">PDF</button>
       <button class="btn btn-sm" style="height:26px" onclick="rgSend(${i})">Senden</button>
+      <button class="btn btn-sm" style="height:26px" onclick="rgCopy(${i})">Kopieren</button>
       ${r.abgeschlossen?'':`<button class="btn btn-sm btn-gold" style="height:26px" onclick="rgClose(${i})">Abschliessen</button>`}
     </td></tr>`).join('');
   document.getElementById('sec-rechnungen').innerHTML=`
     <div class="card"><div class="card-title">Rechnungen <span class="muted" style="font-weight:400;font-size:12px;text-transform:none;letter-spacing:0">· zählen als Einnahme, sobald «bezahlt am» gesetzt ist</span></div>
-    <table><thead><tr><th style="width:110px">Nr</th><th style="width:90px">Datum</th><th>Empfänger</th><th class="num" style="width:110px">Total</th><th style="width:150px">Bezahlt am</th><th style="width:250px"></th></tr></thead>
+    <table><thead><tr><th style="width:110px">Nr</th><th style="width:90px">Datum</th><th>Empfänger</th><th class="num" style="width:110px">Total</th><th style="width:150px">Bezahlt am</th><th style="width:330px"></th></tr></thead>
     <tbody>${list||'<tr><td colspan="6" class="muted" style="padding:8px">Noch keine Rechnungen.</td></tr>'}</tbody></table>
     <button class="btn btn-sm btn-gold" style="margin-top:12px" onclick="rgNew()">+ Neue Rechnung</button></div>
     <div id="rgForm"></div>`;
+}
+// CW1.05: Rechnung kopieren – neuer Entwurf mit naechster Nummer und heutigem Datum; Empfaenger und E-Mail bleiben leer
+function rgCopy(i){
+  const s=FIN.rechnungen[i]; if(!s) return;
+  const n=_blankRg();
+  n.betreff=s.betreff||''; n.anrede=s.anrede||n.anrede; n.intro=s.intro||'';
+  n.positionen=JSON.parse(JSON.stringify((s.positionen&&s.positionen.length)?s.positionen:n.positionen));
+  _rgCur=n; renderRgForm();
+  const f=document.getElementById('rgForm'); if(f){ f.scrollIntoView({behavior:'smooth',block:'start'}); const e=f.querySelector('input'); if(e) e.focus({preventScroll:true}); }
+  status('Kopie von '+s.nr+' als '+n.nr+' geöffnet – Empfänger eintragen und «Rechnung speichern».');
 }
 function _rgNr(datum){ const y=jahrVon(toIso(datum))||String(new Date().getFullYear()); return 'R'+y+'-'+String(FIN.rgNext).padStart(3,'0'); }
 function _blankRg(){
