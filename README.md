@@ -26,5 +26,6 @@ nie in diesem Repo. IBAN und Kontoinhaber werden in der Seite unter «Einstellun
 erfasst und im Sheet gespeichert.
 
 ## Stand
+CW1.02 – Exec-URL des Apps Scripts eingetragen (Seiten; `Code.gs` bleibt CW1.01).
 CW1.01 – Design Schwarz/Gold mit Logo, Hauptseite mit Login, Rechnung angepasst
 (Absender, Kontotext, Feld «Kontoinhaber»). Inhalte (Kategorien, Reiter) noch wie Chilbi.

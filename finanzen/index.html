@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.01">
+<meta name="app-version" content="CW1.02">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.01 -->
+<!-- CW1.02 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -114,7 +114,7 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.01</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.02</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
@@ -150,7 +150,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'HIER_EXEC_URL_EINTRAGEN';   // Exec-URL des eigenen Apps Scripts (siehe README)
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';   // Exec-URL des eigenen Apps Scripts (siehe README)
 const NOTEN = [1000,200,100,50,20,10];
 const MUENZ = [5,2,1,0.5,0.2,0.1,0.05];
 let PW = '';
