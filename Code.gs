@@ -1,15 +1,17 @@
 /**
  * Chicken Wings – Finanzen (Google Apps Script)
- * Stützpunktfeuerwehr Meilen
- * Version CW1.01
+ * Feuerwehr Hockeyteam Chicken Wings
+ * Version CW1.03
  *
- * Übernommen aus dem Chilbi-Tool (Teil «Finanzen / Abrechnung»).
- * Einrichten: Werte unten setzen, als Web-App bereitstellen (Zugriff: alle),
+ * Einfache Einnahmen-/Ausgabenrechnung: Einnahmen, Ausgaben, Rechnungen, Abrechnung.
+ * Einrichten: Werte unten setzen, als Web-App bereitstellen (Ausführen als «ich», Zugriff «alle»),
  * die Exec-URL in finanzen/index.html bei SCRIPT_URL eintragen.
+ * Sheet-ID und Passwörter NIE ins öffentliche Repo schreiben.
  */
-const ABRECHNUNG_SHEET_ID = 'HIER_SHEET_ID_EINTRAGEN';   // eigenes Sheet mit den Reitern Meta, Einnahmen, Ausgaben, Stock, Kasse, Rechnungen
+const ABRECHNUNG_SHEET_ID = 'HIER_SHEET_ID_EINTRAGEN';   // eigenes Sheet; die Reiter Meta, Einnahmen, Ausgaben, Rechnungen legt das Script selbst an
 const ABRECHNUNG_PW       = 'HIER_PASSWORT_EINTRAGEN';   // Vollzugriff
 const ABRECHNUNG_PW_VIEW  = 'HIER_LESEPASSWORT';         // nur lesen
+const CW_VERSION          = 'CW1.03';
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -33,14 +35,19 @@ function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-// ===== Finanzen / Abrechnung (separates Sheet ABRECHNUNG_SHEET_ID) =====
+// ===== Finanzen (Sheet ABRECHNUNG_SHEET_ID) =====
 function _abrNum(v){ var n = parseFloat(String(v==null?'':v).replace(',', '.')); return isNaN(n) ? 0 : n; }
+// Datum als Text JJJJ-MM-TT. Sheets macht aus Datumstexten echte Datumswerte; beim Lesen
+// werden sie in der Zeitzone des Sheets zurückgewandelt (sonst verschiebt sich der Tag).
+function _abrCell(v, tz){ return (v instanceof Date) ? Utilities.formatDate(v, tz, 'yyyy-MM-dd') : v; }
+function _abrIso(v){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v==null?'':v).trim()); return m ? m[0] : ''; }
 function _abrReadTab(ss, name){
   var sh = ss.getSheetByName(name); if(!sh) return [];
   var vals = sh.getDataRange().getValues(); if(vals.length < 2) return [];
+  var tz = ss.getSpreadsheetTimeZone();
   var head = vals[0].map(function(h){ return String(h).trim(); });
   var out = [];
-  for(var i=1;i<vals.length;i++){ var o={}; for(var j=0;j<head.length;j++){ o[head[j]] = vals[i][j]; } out.push(o); }
+  for(var i=1;i<vals.length;i++){ var o={}; for(var j=0;j<head.length;j++){ o[head[j]] = _abrCell(vals[i][j], tz); } out.push(o); }
   return out;
 }
 function _abrWriteTab(ss, name, header, rows){
@@ -51,75 +58,48 @@ function _abrWriteTab(ss, name, header, rows){
 }
 function abrLoad(readonly){
   var ss = SpreadsheetApp.openById(ABRECHNUNG_SHEET_ID);
+  var tz = ss.getSpreadsheetTimeZone();
   var meta = {};
   var mSheet = ss.getSheetByName('Meta');
-  if(mSheet){ var mv = mSheet.getDataRange().getValues(); for(var i=1;i<mv.length;i++){ if(mv[i][0]) meta[String(mv[i][0]).trim()] = mv[i][1]; } }
-  return { ok:true, readonly:!!readonly, meta:meta,
+  if(mSheet){ var mv = mSheet.getDataRange().getValues(); for(var i=1;i<mv.length;i++){ if(mv[i][0]) meta[String(mv[i][0]).trim()] = _abrCell(mv[i][1], tz); } }
+  return { ok:true, v:CW_VERSION, readonly:!!readonly, meta:meta,
     einnahmen:_abrReadTab(ss,'Einnahmen'), ausgaben:_abrReadTab(ss,'Ausgaben'),
-    stock:_abrReadTab(ss,'Stock'), kasse:_abrReadTab(ss,'Kasse'),
     rechnungen:_abrReadTab(ss,'Rechnungen') };
 }
 function abrSave(p){
   var ss = SpreadsheetApp.openById(ABRECHNUNG_SHEET_ID);
   var meta = p.meta || {};
-  var mSheet = ss.getSheetByName('Meta') || ss.insertSheet('Meta');
-  mSheet.clear();
-  mSheet.getRange(1,1,22,2).setValues([
+  var rows = [
     ['Schlüssel','Wert'],
-    ['Jahr', meta.jahr||''],
-    ['Vorjahr', meta.vorjahr||''],
-    ['VorjahrKasse', meta.vorjahrKasse||''],
-    ['EinnahmenKategorien', (meta.einKat||[]).join(', ')],
-    ['AusgabenKategorien', (meta.ausKat||[]).join(', ')],
-    ['KostenKategorien', (meta.kostKat||[]).join(', ')],
-    ['SollStock', meta.sollStock||''],
-    ['SollKasse', meta.sollKasse||''],
-    ['MuenzProRolle', meta.muenzProRolle||''],
-    ['Spaetzli', meta.spaetzli||''],
-    ['Helferstunden', meta.helferstunden||''],
-    ['Twint', meta.twint||''],
-    ['VorjahrJson', meta.vorjahrJson||''],
+    ['Version', CW_VERSION],
+    ['Anfangsbestand', _abrNum(meta.anfang)],
+    ['KatEinnahmen', (meta.einKat||[]).join(', ')],
+    ['KatAusgaben', (meta.ausKat||[]).join(', ')],
     ['RgAbsender', meta.rgAbsender||''],
     ['RgIntro', meta.rgIntro||''],
-    ['RgVorPos', meta.rgVorPos||''],
     ['RgIban', meta.rgIban||''],
     ['RgKontoinhaber', meta.rgKontoinhaber||''],
     ['RgGruss', meta.rgGruss||''],
     ['RgFooter', meta.rgFooter||''],
     ['RgNext', meta.rgNext||'']
-  ]);
-  _abrWriteTab(ss,'Einnahmen',['Nr','Kategorie','Beschreibung','Betrag','Vorjahr'],
-    (p.einnahmen||[]).map(function(r,i){ return [i+1, r.kat||'', r.besch||'', _abrNum(r.betrag), _abrNum(r.vorjahr)]; }));
-  _abrWriteTab(ss,'Ausgaben',['Nr','Zahlungsart','Beschreibung','Betrag','Vorjahr','Bemerkung','Kostenart','Vorschuss','Zurueckbezahlt'],
-    (p.ausgaben||[]).map(function(r,i){ return [i+1, r.art||'', r.besch||'', _abrNum(r.betrag), _abrNum(r.vorjahr), r.bem||'', r.kostenart||'', r.vorschuss?1:'', r.rueck?1:'']; }));
-  _abrWriteTab(ss,'Stock',['Wert','Einzeln','Rollen'],
-    (p.stock||[]).map(function(r){ return [_abrNum(r.wert), _abrNum(r.einzeln), _abrNum(r.rollen)]; }));
-  _abrWriteTab(ss,'Kasse',['Wert','Einzeln','Rollen'],
-    (p.kasse||[]).map(function(r){ return [_abrNum(r.wert), _abrNum(r.einzeln), _abrNum(r.rollen)]; }));
-  _abrWriteTab(ss,'Rechnungen',['Nr','Datum','Empfaenger','Email','Betreff','Total','JSON'],
-    (p.rechnungen||[]).map(function(r){ return [r.nr||'', r.datum||'', r.empfaenger||'', r.email||'', r.betreff||'', _abrNum(r.total), r.json||'']; }));
-  return { ok:true };
+  ];
+  var mSheet = ss.getSheetByName('Meta') || ss.insertSheet('Meta');
+  mSheet.clear();
+  mSheet.getRange(1,1,rows.length,2).setValues(rows);
+  _abrWriteTab(ss,'Einnahmen',['Nr','Datum','Kategorie','Beschreibung','Betrag'],
+    (p.einnahmen||[]).map(function(r,i){ return [i+1, _abrIso(r.datum), r.kat||'', r.besch||'', _abrNum(r.betrag)]; }));
+  _abrWriteTab(ss,'Ausgaben',['Nr','Datum','Kategorie','Beschreibung','Betrag','Bemerkung'],
+    (p.ausgaben||[]).map(function(r,i){ return [i+1, _abrIso(r.datum), r.kat||'', r.besch||'', _abrNum(r.betrag), r.bem||'']; }));
+  _abrWriteTab(ss,'Rechnungen',['Nr','Datum','Empfaenger','Email','Betreff','Total','BezahltAm','JSON'],
+    (p.rechnungen||[]).map(function(r){ return [r.nr||'', r.datum||'', r.empfaenger||'', r.email||'', r.betreff||'', _abrNum(r.total), _abrIso(r.bezahltAm), r.json||'']; }));
+  return { ok:true, v:CW_VERSION };
 }
+
+// Rechnungsversand per Mail: noch nicht angeschlossen (doPost leitet «rechnungMail» nicht weiter,
+// Absenderadresse ist noch offen).
 function rechnungMail(p){
-  var opts = { from:'chilbi@feuerwehrmeilen.ch', name:'Chilbi Herrliberg', htmlBody:p.html };
+  var opts = { htmlBody:p.html };
   if(p.pdf) opts.attachments = [Utilities.newBlob(Utilities.base64Decode(p.pdf), 'application/pdf', p.pdfname||'Rechnung.pdf')];
   GmailApp.sendEmail(p.email, p.subject, p.text||'', opts);
   return { ok:true };
-}
-
-function kuerzelSave(p){
-  _kzWrite(SS_KUERZEL,'Tabellenblatt1',['Kürzel','Vorname','Name','Email'],(p.feuerwehr||[]).map(function(r){ return [r.kuerzel||'', r.vorname||'', r.name||'', r.email||'']; }));
-  _kzWrite(SS_KUERZEL,'Gast',['Kürzel','Vorname','Name','Email','Tel'],(p.gasthelfer||[]).map(function(r){ return [r.kuerzel||'', r.vorname||'', r.name||'', r.email||'', r.tel||'']; }));
-  return { ok:true };
-}
-function _kzWrite(ss,name,headers,rows){
-  var sh=ss.getSheetByName(name); if(!sh) sh=ss.insertSheet(name);
-  sh.clearContents();
-  sh.getRange(1,1,1,headers.length).setValues([headers]);
-  if(rows.length) sh.getRange(2,1,rows.length,headers.length).setValues(rows);
-}
-function jsonResponse(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
 }

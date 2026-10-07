@@ -3,58 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="app-version" content="CW1.02">
+<meta name="app-version" content="CW1.03">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>Chicken Wings</title>
 <link rel="icon" type="image/png" href="favicon.png">
-<!-- CW1.02 -->
+<!-- CW1.03 -->
 <style>
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{margin:0;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:14px;
-       display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-  #logoBtn{background:none;border:0;padding:0;cursor:pointer;display:block;border-radius:8px;
-           transition:transform .35s ease;}
-  #logoBtn img{display:block;width:min(360px,70vw,52vh);height:auto;aspect-ratio:1/1;transition:width .35s ease;}
+       display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+  main{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px 12px;}
+  #logoBtn{background:none;border:0;padding:0;cursor:pointer;display:block;border-radius:8px;transition:transform .35s ease;}
+  #logoBtn img{display:block;width:min(360px,70vw,46vh);height:auto;aspect-ratio:1/1;transition:width .35s ease;}
   #logoBtn:hover{transform:scale(1.03);}
   #logoBtn:focus-visible{outline:2px solid #ffc800;outline-offset:8px;}
   body.open #logoBtn{cursor:default;transform:none;}
-  body.open #logoBtn img{width:min(220px,50vw,34vh);}
+  body.open #logoBtn img{width:min(220px,50vw,30vh);}
   #login{width:100%;max-width:280px;margin-top:22px;text-align:center;display:none;}
   body.open #login{display:block;animation:in .35s ease both;}
   @keyframes in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
-  #pw{width:100%;height:42px;background:#111;border:1px solid #555;color:#fff;text-align:center;
-      font-family:inherit;font-size:15px;}
+  #pw{width:100%;height:42px;background:#111;border:1px solid #555;color:#fff;text-align:center;font-family:inherit;font-size:15px;}
   #pw:focus{border-color:#ffc800;outline:none;}
   #go{width:100%;height:42px;margin-top:10px;background:#ffc800;border:2px solid #ffc800;color:#000;
       font-family:inherit;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;}
   #go:hover{background:#e0aa00;border-color:#e0aa00;}
   #go:focus-visible{outline:2px solid #fff;outline-offset:2px;}
   #msg{color:#ff6b6b;font-size:13px;margin-top:10px;min-height:16px;}
-  footer{position:fixed;left:0;right:0;bottom:10px;text-align:center;color:#555;font-size:11px;}
+
+  /* Sponsoren */
+  footer{flex:0 0 auto;padding:14px 0 16px;border-top:1px solid #222;position:relative;--sp-h:46px;--sp-gap:48px;}
+  footer p{margin:0 0 12px;text-align:center;color:#8a8a8a;font-size:12px;}
+  .sp-view{overflow:hidden;}
+  .sp-track{display:flex;align-items:center;justify-content:center;width:100%;}
+  .sp-track a{flex:0 0 auto;display:block;margin:0 calc(var(--sp-gap)/2);opacity:.8;transition:opacity .2s;border-radius:2px;}
+  .sp-track a:hover,.sp-track a:focus-visible{opacity:1;}
+  .sp-track a:focus-visible{outline:2px solid #ffc800;outline-offset:4px;}
+  .sp-track img{display:block;height:var(--sp-h);width:auto;}
+  /* Laufband: nur wenn die Logos nicht nebeneinander passen (Klasse setzt das Script) */
+  .sp-view.run{-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+  .sp-view.run .sp-track{justify-content:flex-start;width:max-content;animation:lauf var(--sp-dur,30s) linear infinite;}
+  .sp-view.run:hover .sp-track,.sp-view.run:focus-within .sp-track{animation-play-state:paused;}
+  @keyframes lauf{to{transform:translateX(-50%);}}
+  .ver{position:absolute;right:8px;bottom:3px;color:#444;font-size:10px;}
+  @media (max-width:600px){ footer{--sp-h:38px;--sp-gap:36px;} }
   @media (prefers-reduced-motion:reduce){
     #logoBtn,#logoBtn img{transition:none;} body.open #login{animation:none;} #logoBtn:hover{transform:none;}
+    .sp-view.run{overflow-x:auto;-webkit-mask-image:none;mask-image:none;} .sp-view.run .sp-track{animation:none;}
   }
 </style>
 </head>
 <body>
 
-<button id="logoBtn" type="button" aria-label="Anmelden" aria-expanded="false" aria-controls="login">
-  <img src="logo.png" width="560" height="560" alt="Feuerwehr Hockeyteam Chicken Wings">
-</button>
+<main>
+  <button id="logoBtn" type="button" aria-label="Anmelden" aria-expanded="false" aria-controls="login">
+    <img src="logo.png" width="560" height="560" alt="Feuerwehr Hockeyteam Chicken Wings">
+  </button>
+  <form id="login" autocomplete="on">
+    <input type="password" id="pw" placeholder="Passwort" aria-label="Passwort" autocomplete="current-password">
+    <button id="go" type="submit">Anmelden</button>
+    <div id="msg" role="alert"></div>
+  </form>
+</main>
 
-<form id="login" autocomplete="on">
-  <input type="password" id="pw" placeholder="Passwort" aria-label="Passwort" autocomplete="current-password">
-  <button id="go" type="submit">Anmelden</button>
-  <div id="msg" role="alert"></div>
-</form>
-
-<footer>CW1.02</footer>
+<footer>
+  <p>Wir werden unterstützt von</p>
+  <div class="sp-view" id="spView"><div class="sp-track" id="spTrack"></div></div>
+  <span class="ver">CW1.03</span>
+</footer>
 
 <script>
-// CW1.01 – Hauptseite. Das Passwort wird hier NICHT geprueft und steht nirgends im Code:
-// es wird einmalig an die Finanzseite uebergeben, die es beim Server (Apps Script) prueft.
+// CW1.03 – Hauptseite. Das Passwort wird hier NICHT geprueft und steht nirgends im Code:
+// es wird an die Finanzseite uebergeben, die es beim Server (Apps Script) prueft.
 var btn=document.getElementById('logoBtn');
 btn.addEventListener('click',function(){
   if(document.body.classList.contains('open')) return;
@@ -69,6 +90,37 @@ document.getElementById('login').addEventListener('submit',function(ev){
   try{ sessionStorage.setItem('cw_pw',pw); }catch(e){}
   location.href='finanzen/';
 });
+
+// Sponsoren: Graustufen-Logos (sponsoren/*.png, alle 112 px hoch), Reihenfolge bei jedem Laden neu gemischt.
+var SPONSOREN=[
+  {n:'Restaurant Löwen Meilen',        f:'loewen',         w:322,         u:'https://loewen-meilen.ch/'},
+  {n:'Getränkemärt Urs Rauch',         f:'getraenkemaert', w:280, u:'https://www.getraenkemaert.ch/'},
+  {n:'Hersperger Meilen, Wasser – Wärme', f:'hersperger',  w:159,     u:'https://www.hersperger-meilen.ch/'},
+  {n:'Habegger Plattenbeläge Meilen',  f:'habegger',       w:419,       u:'https://habegger-meilen.ch/'},
+  {n:'Feinkost Lehmann Herrliberg',    f:'lehmann',        w:203,        u:'https://feinkost-lehmann.ch/'}
+];
+(function(){
+  var view=document.getElementById('spView'), track=document.getElementById('spTrack');
+  for(var i=SPONSOREN.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=SPONSOREN[i]; SPONSOREN[i]=SPONSOREN[j]; SPONSOREN[j]=t; }
+  function item(s,clone){
+    var a=document.createElement('a'); a.href=s.u; a.target='_blank'; a.rel='noopener';
+    var im=document.createElement('img'); im.src='sponsoren/'+s.f+'.png'; im.width=s.w; im.height=112; im.alt=s.n; a.appendChild(im);
+    if(clone){ a.setAttribute('aria-hidden','true'); a.tabIndex=-1; im.alt=''; a.className='clone'; }
+    return a;
+  }
+  SPONSOREN.forEach(function(s){ track.appendChild(item(s,false)); });
+  function fit(){
+    view.classList.remove('run');
+    track.querySelectorAll('.clone').forEach(function(c){ c.remove(); });
+    var need=0; track.querySelectorAll('a').forEach(function(a){ var cs=getComputedStyle(a); need+=a.offsetWidth+parseFloat(cs.marginLeft)+parseFloat(cs.marginRight); });
+    if(need>view.clientWidth+1){
+      SPONSOREN.forEach(function(s){ track.appendChild(item(s,true)); });
+      track.style.setProperty('--sp-dur',Math.max(12,Math.round(need/35))+'s');
+      view.classList.add('run');
+    }
+  }
+  fit(); var tm; window.addEventListener('resize',function(){ clearTimeout(tm); tm=setTimeout(fit,150); });
+})();
 </script>
 </body>
 </html>

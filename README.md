@@ -1,31 +1,34 @@
-# Chicken Wings – Finanzen
+# Chicken Wings
 
-Finanztool der Stützpunktfeuerwehr Meilen für den Anlass «Chicken Wings»,
-übernommen aus dem Finanzteil des Chilbi-Tools.
+Website und Finanztool des Feuerwehr Hockeyteams Chicken Wings.
+Live: https://chickenwings.feuerwehrmeilen.ch
 
 ## Aufbau
-- `index.html` – Hauptseite: schwarz, Logo in der Mitte, Klick öffnet das Login
+- `index.html` – Hauptseite: schwarz, Logo in der Mitte, Klick öffnet das Login; Fusszeile mit Sponsoren
+- `sponsoren/*.png` – Sponsorenlogos in Graustufen, alle 112 px hoch. Liste, Links und Reihenfolge (zufällig) stehen in `index.html` bei `SPONSOREN`
 - `logo.png`, `favicon.png` – freigestelltes Logo
-- `CNAME` – eigene Domain `chickenwings.feuerwehrmeilen.ch`
-- `finanzen/index.html` – die Seite: Einnahmen, Ausgaben, Stock, Kasse, Rechnungen, Auswertung
-- `Code.gs` – Google Apps Script als Server, liest und schreibt ein eigenes Abrechnungs-Sheet
+- `CNAME` – eigene Domain
+- `finanzen/index.html` – Einnahmen-/Ausgabenrechnung: Abrechnung, Einnahmen, Ausgaben, Rechnungen, Einstellungen
+- `Code.gs` – Google Apps Script als Server, liest und schreibt das Abrechnungs-Sheet
+
+## Finanzen in Kürze
+- Durchgehende Rechnung in einem Sheet, jede Buchung mit Datum; Abrechnung gesamt oder pro Jahr
+- Anfangsbestand und Kategorien in den Einstellungen
+- Rechnungen zählen als Einnahme, sobald «bezahlt am» gesetzt ist
+- Seite und Script müssen zusammenpassen: meldet das Script eine ältere Version als die Seite verlangt, ist Speichern gesperrt
 
 ## Einrichten
-1. **Sheet** anlegen mit den Reitern `Meta`, `Einnahmen`, `Ausgaben`, `Stock`, `Kasse`, `Rechnungen`
-   (die Kopfzeilen legt das Script beim ersten Speichern selbst an).
-2. **Apps Script** anlegen, `Code.gs` einfügen und oben eintragen:
+1. Leeres Google Sheet anlegen (die Reiter legt das Script beim ersten Speichern an), nicht öffentlich freigeben.
+2. Apps Script im selben Konto anlegen, `Code.gs` einfügen und oben eintragen:
    `ABRECHNUNG_SHEET_ID`, `ABRECHNUNG_PW` (Vollzugriff), `ABRECHNUNG_PW_VIEW` (nur lesen).
-3. Als **Web-App bereitstellen**: Ausführen als «ich», Zugriff «alle».
-4. Die Exec-URL in `finanzen/index.html` bei `SCRIPT_URL` eintragen.
-5. GitHub Pages aktivieren (Branch `main`, Ordner `/`), danach ist die Seite unter
-   `…/finanzen/` erreichbar. Eigene Domain optional über eine `CNAME`-Datei.
+3. Als Web-App bereitstellen: Ausführen als «ich», Zugriff «alle». Nach jeder Änderung an `Code.gs` eine neue Version bereitstellen.
+4. Die Exec-URL steht in `finanzen/index.html` bei `SCRIPT_URL`.
 
 ## Passwörter und Bankdaten
-Das Repo ist öffentlich. Passwörter werden nur im Apps Script gesetzt und dort geprüft,
-nie in diesem Repo. IBAN und Kontoinhaber werden in der Seite unter «Einstellungen»
-erfasst und im Sheet gespeichert.
+Das Repo ist öffentlich. Sheet-ID und Passwörter werden nur im Apps Script gesetzt, nie in diesem Repo.
+IBAN und Kontoinhaber werden in der Seite unter «Einstellungen» erfasst und im Sheet gespeichert.
 
 ## Stand
-CW1.02 – Exec-URL des Apps Scripts eingetragen (Seiten; `Code.gs` bleibt CW1.01).
-CW1.01 – Design Schwarz/Gold mit Logo, Hauptseite mit Login, Rechnung angepasst
-(Absender, Kontotext, Feld «Kontoinhaber»). Inhalte (Kategorien, Reiter) noch wie Chilbi.
+- CW1.03 – Umbau auf einfache Einnahmen-/Ausgabenrechnung (Chilbi-Teile entfernt), Sponsoren-Fusszeile auf der Hauptseite. `Code.gs` muss neu bereitgestellt werden.
+- CW1.02 – Exec-URL eingetragen
+- CW1.01 – Design Schwarz/Gold mit Logo, Hauptseite mit Login
