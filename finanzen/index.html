@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.07">
+<meta name="app-version" content="CW1.08">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.07 -->
+<!-- CW1.08 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -112,7 +112,7 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.07</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.08</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
@@ -139,7 +139,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';
-const APP_VERSION = 'CW1.07';
+const APP_VERSION = 'CW1.08';
 const SERVER_MIN = 'CW1.03';   // aelteres Apps Script kennt Datum / «bezahlt am» nicht -> Speichern gesperrt
 let PW = '';
 let VIEW_ONLY=false, SERVER_OK=true;
@@ -265,22 +265,24 @@ function renderAbrechnung(){
   const eT=summe(ein), aT=summe(aus), erg=eT-aT, anf=anfangFuer(j), end=anf+erg;
   const eK=nachKat(ein,[KAT_RG].concat(FIN.einKat)), aK=nachKat(aus,FIN.ausKat);
   const ohne=buchEin().concat(buchAus()).filter(b=>!b.datum).length;
-  const det=(id,segs)=>segs.map(s=>`<tr class="detrow det-${id}"><td style="padding-left:26px" class="muted">${esc(s.label)}</td><td class="num muted">CHF ${F(s.value)}</td></tr>`).join('');
+  // CW1.08: unter jeder Kategorie die einzelnen Buchungen (Datum, Beschreibung, Betrag)
+  const det=(id,segs,list)=>segs.map(s=>`<tr class="detrow det-${id}"><td style="padding-left:26px;font-weight:700">${esc(s.label)}</td><td class="num" style="font-weight:700">CHF ${F(s.value)}</td></tr>`+
+    list.filter(b=>b.kat===s.label).sort(byDatum).map(b=>`<tr class="detrow det-${id}"><td style="padding-left:44px;font-size:12px" class="muted"><span style="display:inline-block;width:76px">${b.datum?fmtD(b.datum):'ohne Datum'}</span>${esc(b.besch||'(ohne Beschreibung)')}</td><td class="num muted" style="font-size:12px">CHF ${F(b.betrag)}</td></tr>`).join('')).join('');
   const sel=`<select class="in no-print" style="width:auto;height:28px;margin-left:10px;font-weight:400;text-transform:none;letter-spacing:0" onchange="ABR_JAHR=this.value;renderAbrechnung()" aria-label="Zeitraum"><option value="alle"${j==='alle'?' selected':''}>Alle Jahre</option>${js.map(y=>`<option${y===j?' selected':''}>${y}</option>`).join('')}</select>`;
   const titel=j==='alle'?'Abrechnung gesamt':'Abrechnung '+j;
   const offen=offeneRg();
-  const offenCard=offen.length?`<div class="card"><div class="card-title">Offene Rechnungen <span class="muted" style="font-weight:400;font-size:12px;text-transform:none;letter-spacing:0">· zählen erst als Einnahme, wenn «bezahlt am» gesetzt ist</span></div>
+  const offenCard=offen.length?`<div class="card"><div class="card-title">Offene Rechnungen <span class="muted" style="font-weight:400;font-size:12px;text-transform:none;letter-spacing:0">· Rechnungen gestellt, aber noch nicht beglichen</span></div>
     <table><thead><tr><th style="width:100px">Nr</th><th style="width:100px">Datum</th><th>Empfänger</th><th class="num" style="width:120px">Total</th></tr></thead><tbody>
     ${offen.map(r=>`<tr><td>${esc(r.nr)}</td><td>${esc(r.datum)}</td><td>${esc((r.empfaenger&&r.empfaenger[0])||r.betreff||'')}</td><td class="num">CHF ${F(N(r.total))}</td></tr>`).join('')}
     </tbody></table><div class="kv total" style="margin-top:8px"><span>Total offen</span><span>CHF ${F(offen.reduce((s,r)=>s+N(r.total),0))}</span></div></div>`:'';
   const donut=(t,segs)=>`<div class="auswert-cell"><div class="auswert-h">${t}</div><div class="auswert-row">${_svgDonut(segs)}<div class="auswert-leg">${segs.length?_legendHtml(segs):'<span class="muted" style="font-size:12px">Noch keine Buchungen.</span>'}</div></div></div>`;
   document.getElementById('sec-abrechnung').innerHTML=`
-    <div class="print-only" style="margin-bottom:14px"><div style="font-size:16px;font-weight:700">${esc(FIN.rgAbsender||'Chicken Wings')}</div><div class="muted">${titel} · Stand ${fmtD(heute())}</div></div>
+    <div class="print-only" style="margin-bottom:14px"><div style="font-size:16px;font-weight:700">${esc(FIN.rgAbsender||'Chicken Wings')}</div><div class="muted">${titel} · Stand ${fmtD(heute())}, ${new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})}</div></div>
     <div class="card"><div class="card-title"><span class="no-print">Abrechnung</span>${sel}</div>
     <table><tbody>
       <tr><td>Anfangsbestand${j==='alle'?'':' per 01.01.'+j}</td><td class="num">CHF ${F(anf)}</td></tr>
-      <tr style="cursor:pointer" onclick="abrTog('ein')"><td><span id="ico-ein" class="muted">▸</span> Total Einnahmen</td><td class="num pos">CHF ${F(eT)}</td></tr>${det('ein',eK)}
-      <tr style="cursor:pointer" onclick="abrTog('aus')"><td><span id="ico-aus" class="muted">▸</span> Total Ausgaben</td><td class="num neg">CHF ${F(aT)}</td></tr>${det('aus',aK)}
+      <tr style="cursor:pointer" onclick="abrTog('ein')"><td><span id="ico-ein" class="muted">▸</span> Total Einnahmen</td><td class="num pos">CHF ${F(eT)}</td></tr>${det('ein',eK,ein)}
+      <tr style="cursor:pointer" onclick="abrTog('aus')"><td><span id="ico-aus" class="muted">▸</span> Total Ausgaben</td><td class="num neg">CHF ${F(aT)}</td></tr>${det('aus',aK,aus)}
       <tr style="font-weight:700"><td>${erg>=0?'Gewinn':'Verlust'}</td><td class="num ${erg>=0?'pos':'neg'}">CHF ${F(erg)}</td></tr>
       <tr style="font-weight:700"><td style="border-top:2px solid #000;border-bottom:none;padding-top:8px">Endbestand${j==='alle'?'':' per 31.12.'+j}</td><td class="num" style="border-top:2px solid #000;border-bottom:none;padding-top:8px">CHF ${F(end)}</td></tr>
     </tbody></table>
@@ -553,6 +555,7 @@ async function _doSave(payload,label){
 
 // ===== Druck / Export =====
 function abrPrint(){
+  renderAbrechnung();   // Stand (Datum, Uhrzeit) auf den Druckzeitpunkt setzen
   go('abrechnung',document.querySelector('.menu button[data-s="abrechnung"]'));
   document.querySelectorAll('#sec-abrechnung .detrow').forEach(function(r){ r.classList.add('show'); });
   document.body.classList.add('abr-printing');
