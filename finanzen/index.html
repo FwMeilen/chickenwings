@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<meta name="app-version" content="CW1.08">
+<meta name="app-version" content="CW1.09">
 <script>
 (function(){var el=document.querySelector('meta[name="app-version"]');var RUN=el?el.content:'';fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/name="app-version" content="([^"]+)"/);if(m&&RUN&&m[1]!==RUN){var tg='v='+encodeURIComponent(m[1]);if(location.search.indexOf(tg)===-1){location.replace(location.pathname+'?'+tg);}}}).catch(function(){});})();
 </script>
@@ -12,7 +12,7 @@
 <title>Chicken Wings – Finanzen</title>
 <link rel="icon" type="image/png" href="../favicon.png">
 <meta name="theme-color" content="#000000">
-<!-- CW1.08 -->
+<!-- CW1.09 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -70,7 +70,7 @@
   input[type=date].in{min-width:130px;}
   .warn{background:#fff3cd;border:1px solid #e0aa00;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.5;}
   .print-only{display:none;}
-  @media print{ .print-only{display:block;} .no-print{display:none !important;} }
+  @media print{ .print-only{display:block;} .no-print{display:none !important;} .auswert-leg span{-webkit-print-color-adjust:exact;print-color-adjust:exact;} }
   .detrow{display:none;}
   .detrow.show{display:table-row;}
   .detrow.db{font-weight:700;}
@@ -112,12 +112,13 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.08</span></span></h1>
+    <h1><img data-logo alt=""><span>Chicken Wings&nbsp;–&nbsp;Finanzen <span class="ver">CW1.09</span></span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <span id="saveStatus" class="muted" style="font-size:12px;"></span>
       <button class="btn btn-gold btn-sm" onclick="saveAll()">💾 Speichern</button>
       <button class="btn btn-sm" onclick="loadAll()">Neu laden</button>
-      <button class="btn btn-sm" onclick="abrPrint()">🖨 PDF Abrechnung</button>
+      <button class="btn btn-sm" onclick="abrPrint(false)" title="Abrechnung nur mit den Totalen">🖨 PDF kurz</button>
+      <button class="btn btn-sm" onclick="abrPrint(true)" title="Abrechnung mit allen Kategorien und Buchungen">🖨 PDF detailliert</button>
     </div>
   </header>
   <div class="wrap">
@@ -139,7 +140,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe6cDjviFGth7R0BkRb_D8M5Mrd62lXBpM6xMOMhL9K1s8HK1kvGZBP24atgRBK-Tv/exec';
-const APP_VERSION = 'CW1.08';
+const APP_VERSION = 'CW1.09';
 const SERVER_MIN = 'CW1.03';   // aelteres Apps Script kennt Datum / «bezahlt am» nicht -> Speichern gesperrt
 let PW = '';
 let VIEW_ONLY=false, SERVER_OK=true;
@@ -554,10 +555,12 @@ async function _doSave(payload,label){
 }
 
 // ===== Druck / Export =====
-function abrPrint(){
+// CW1.09: detail=true druckt alle Kategorien und Buchungen, detail=false nur die Totale
+function abrPrint(detail){
   renderAbrechnung();   // Stand (Datum, Uhrzeit) auf den Druckzeitpunkt setzen
   go('abrechnung',document.querySelector('.menu button[data-s="abrechnung"]'));
-  document.querySelectorAll('#sec-abrechnung .detrow').forEach(function(r){ r.classList.add('show'); });
+  document.querySelectorAll('#sec-abrechnung .detrow').forEach(function(r){ r.classList.toggle('show',!!detail); });
+  ['ein','aus'].forEach(function(k){ var ic=document.getElementById('ico-'+k); if(ic) ic.textContent=detail?'▾':'▸'; });
   document.body.classList.add('abr-printing');
   setTimeout(function(){ window.print(); }, 60);
 }
